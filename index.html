@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mauricio Alvim - Portfolio</title>
     <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap" rel="stylesheet">
-    <!-- <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"> -->
-    <!-- <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet"> -->
-    <!-- <link href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap" rel="stylesheet"> -->
     <style>
         * {
             margin: 0;
@@ -22,9 +19,6 @@
             height: 100vh;
             background-color: white;
             font-family: 'Pixelify Sans', sans-serif;
-            /* font-family: 'Press Start 2P', sans-serif; */
-            /* font-family: 'VT323', monospace; */
-            /* font-family: 'Silkscreen', sans-serif; */
             overflow: hidden;
             position: relative;
         }
@@ -45,14 +39,9 @@
           font-size: 1.5em;
           position: relative;
           z-index: 1;
-          color: rgba(255, 255, 255, 0.6); /* Branco levemente opaco */
-          text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.4); /* Sombra preta levemente transparente */
+          color: rgba(255, 255, 255, 0.6);
+          text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.4);
         }
-        ::selection {
-            background-color: rgba(0,0,0,.75);
-            color: rgba(255,255,255,.25);
-        }
-
     </style>
 </head>
 <body>
@@ -63,46 +52,93 @@
     <script>
         const canvas = document.getElementById("bgCanvas");
         const ctx = canvas.getContext("2d");
-
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        const pixels = [];
-
-        function createPixels() {
-            for (let i = 0; i < 50; i++) {
-                pixels.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    size: Math.random() * 4 + 2,
-                    speed: Math.random() * 1 + 0.5
-                });
-            }
-        }
-
-        function drawPixels() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "black";
-            
-            pixels.forEach(pixel => {
-                ctx.fillRect(Math.floor(pixel.x), Math.floor(pixel.y), pixel.size, pixel.size);
-                pixel.y += pixel.speed;
-                if (pixel.y > canvas.height) {
-                    pixel.y = -pixel.size;
-                    pixel.x = Math.random() * canvas.width;
-                }
-            });
-
-            requestAnimationFrame(drawPixels);
-        }
-
-        createPixels();
-        drawPixels();
+        const backgrounds = [rainAnimation, bouncingBallAnimation];
+        const selectedBackground = backgrounds[Math.floor(Math.random() * backgrounds.length)];
+        selectedBackground();
 
         window.addEventListener("resize", () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         });
+
+        function rainAnimation() {
+            const pixels = [];
+
+            function createPixels() {
+                for (let i = 0; i < 50; i++) {
+                    pixels.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        size: Math.random() * 4 + 2,
+                        speed: Math.random() * 1 + 0.5
+                    });
+                }
+            }
+
+            function drawPixels() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "black";
+                
+                pixels.forEach(pixel => {
+                    ctx.fillRect(Math.floor(pixel.x), Math.floor(pixel.y), pixel.size, pixel.size);
+                    pixel.y += pixel.speed;
+                    if (pixel.y > canvas.height) {
+                        pixel.y = -pixel.size;
+                        pixel.x = Math.random() * canvas.width;
+                    }
+                });
+
+                requestAnimationFrame(drawPixels);
+            }
+
+            createPixels();
+            drawPixels();
+        }
+
+        function bouncingBallAnimation() {
+            let ball = {
+                x: Math.random() * canvas.width,
+                y: canvas.height * 0.2,
+                radius: 20,
+                speedY: 0,
+                gravity: 0.5,
+                bounceFactor: -0.7,
+                waiting: true,
+                nextBounceTime: Math.random() * 3000 + 2000
+            };
+            
+            function drawBall() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "black";
+                
+                ctx.beginPath();
+                ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            function updateBall() {
+                if (!ball.waiting) {
+                    ball.speedY += ball.gravity;
+                    ball.y += ball.speedY;
+                    
+                    if (ball.y + ball.radius >= canvas.height) {
+                        ball.y = canvas.height - ball.radius;
+                        ball.speedY *= ball.bounceFactor;
+                        ball.waiting = true;
+                        ball.nextBounceTime = Math.random() * 3000 + 2000;
+                        setTimeout(() => ball.waiting = false, ball.nextBounceTime);
+                    }
+                }
+                drawBall();
+                requestAnimationFrame(updateBall);
+            }
+
+            setTimeout(() => ball.waiting = false, ball.nextBounceTime);
+            updateBall();
+        }
     </script>
 </body>
 </html>
