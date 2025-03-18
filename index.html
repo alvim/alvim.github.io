@@ -42,12 +42,32 @@
           color: rgba(255, 255, 255, 0.6);
           text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.4);
         }
+        #backgroundSelector {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px;
+            border-radius: 5px;
+            font-family: 'Pixelify Sans', sans-serif;
+            transition: opacity 0.3s ease-in-out;
+            opacity: .01;
+        }
+
+        #backgroundSelector:hover {
+            opacity: .125;
+        }
     </style>
 </head>
 <body>
     <canvas id="bgCanvas"></canvas>
     <h1>Mauricio Alvim</h1>
     <h2>Design & Software</h2>
+    
+    <select  id="backgroundSelector">
+        <option disabled selected value></option>
+        <option value="0">Chuva de Bloquinhos</option>
+        <option value="1">Boula</option>
+    </select>
 
     <script>
         const canvas = document.getElementById("bgCanvas");
@@ -56,8 +76,14 @@
         canvas.height = window.innerHeight;
 
         const backgrounds = [rainAnimation, bouncingBallAnimation];
-        const selectedBackground = backgrounds[Math.floor(Math.random() * backgrounds.length)];
-        selectedBackground();
+        let currentBackground = Math.floor(Math.random() * backgrounds.length);
+        backgrounds[currentBackground]();
+
+        document.getElementById("backgroundSelector").addEventListener("change", function(event) {
+            currentBackground = parseInt(event.target.value);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            backgrounds[currentBackground]();
+        });
 
         window.addEventListener("resize", () => {
             canvas.width = window.innerWidth;
