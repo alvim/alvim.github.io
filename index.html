@@ -63,10 +63,11 @@
     <h1>Mauricio Alvim</h1>
     <h2>Design & Software</h2>
     
-    <select  id="backgroundSelector">
+    <select id="backgroundSelector">
         <option disabled selected value></option>
         <option value="0">Chuva de Bloquinhos</option>
         <option value="1">Boula</option>
+        <option value="2">Inseto Voador</option>
     </select>
 
     <script>
@@ -75,7 +76,7 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        const backgrounds = [rainAnimation, bouncingBallAnimation];
+        const backgrounds = [rainAnimation, bouncingBallAnimation, flyingInsectAnimation];
         let currentBackground = Math.floor(Math.random() * backgrounds.length);
         backgrounds[currentBackground]();
 
@@ -164,6 +165,42 @@
 
             setTimeout(() => ball.waiting = false, ball.nextBounceTime);
             updateBall();
+        }
+
+        function flyingInsectAnimation() {
+            let insect = {
+                x: canvas.width / 2,
+                y: canvas.height / 2,
+                speedX: 1,
+                speedY: 1,
+                wingFlap: 0
+            };
+
+            function drawInsect() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = "black";
+                ctx.lineWidth = 2;
+                
+                ctx.beginPath();
+                ctx.moveTo(insect.x - 5, insect.y);
+                ctx.lineTo(insect.x + 5, insect.y);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(insect.x, insect.y - 3 + Math.sin(insect.wingFlap) * 2);
+                ctx.lineTo(insect.x, insect.y + 3 - Math.sin(insect.wingFlap) * 2);
+                ctx.stroke();
+            }
+
+            function updateInsect() {
+                insect.x += (Math.random() - 0.5) * 4;
+                insect.y += (Math.random() - 0.5) * 4;
+                insect.wingFlap += 0.2;
+                drawInsect();
+                requestAnimationFrame(updateInsect);
+            }
+
+            updateInsect();
         }
     </script>
 </body>
