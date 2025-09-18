@@ -36,11 +36,11 @@
             z-index: 1;
         }
         h2 {
-          font-size: 1.5em;
-          position: relative;
-          z-index: 1;
-          color: rgba(255, 255, 255, 0.6);
-          text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.4);
+            font-size: 1.5em;
+            position: relative;
+            z-index: 1;
+            color: rgba(255, 255, 255, 0.6);
+            text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.4);
         }
         #backgroundSelector {
             position: absolute;
@@ -56,151 +56,169 @@
         #backgroundSelector:hover {
             opacity: .125;
         }
+        
+        .hello-world {
+            font-size: 2em;
+            color: black;
+        }
     </style>
 </head>
 <body>
-    <canvas id="bgCanvas"></canvas>
-    <h1>Mauricio Alvim</h1>
-    <h2>Design & Software</h2>
-    
-    <select id="backgroundSelector">
-        <option disabled selected value></option>
-        <option value="0">chuva de bloquinhos</option>
-        <option value="1">boula</option>
-        <option value="2">mukito</option>
-    </select>
-
     <script>
-        const canvas = document.getElementById("bgCanvas");
-        const ctx = canvas.getContext("2d");
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        const backgrounds = [rainAnimation, bouncingBallAnimation, flyingInsectAnimation];
-        let currentBackground = Math.floor(Math.random() * backgrounds.length);
-        backgrounds[currentBackground]();
-
-        document.getElementById("backgroundSelector").addEventListener("change", function(event) {
-            currentBackground = parseInt(event.target.value);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            backgrounds[currentBackground]();
-        });
-
-        window.addEventListener("resize", () => {
+        // Verifica se existe parâmetro "x" na URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const hasX = urlParams.has('x');
+        
+        if (hasX) {
+            // Se tiver "x" na query string, renderiza apenas Hello World!
+            document.body.innerHTML = '<h1 class="hello-world">Hello World!</h1>';
+        } else {
+            // Se não tiver, renderiza o portfolio completo
+            document.body.innerHTML = `
+                <canvas id="bgCanvas"></canvas>
+                <h1>Mauricio Alvim</h1>
+                <h2>Design & Software</h2>
+                
+                <select id="backgroundSelector">
+                    <option disabled selected value></option>
+                    <option value="0">chuva de bloquinhos</option>
+                    <option value="1">boula</option>
+                    <option value="2">mukito</option>
+                </select>
+            `;
+            
+            // Inicializa as animações apenas se não tiver "x"
+            const canvas = document.getElementById("bgCanvas");
+            const ctx = canvas.getContext("2d");
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-        });
 
-        function rainAnimation() {
-            const pixels = [];
+            const backgrounds = [rainAnimation, bouncingBallAnimation, flyingInsectAnimation];
+            let currentBackground = Math.floor(Math.random() * backgrounds.length);
+            backgrounds[currentBackground]();
 
-            function createPixels() {
-                for (let i = 0; i < 50; i++) {
-                    pixels.push({
-                        x: Math.random() * canvas.width,
-                        y: Math.random() * canvas.height,
-                        size: Math.random() * 4 + 2,
-                        speed: Math.random() * 1 + 0.5
-                    });
-                }
-            }
-
-            function drawPixels() {
+            document.getElementById("backgroundSelector").addEventListener("change", function(event) {
+                currentBackground = parseInt(event.target.value);
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = "black";
-                
-                pixels.forEach(pixel => {
-                    ctx.fillRect(Math.floor(pixel.x), Math.floor(pixel.y), pixel.size, pixel.size);
-                    pixel.y += pixel.speed;
-                    if (pixel.y > canvas.height) {
-                        pixel.y = -pixel.size;
-                        pixel.x = Math.random() * canvas.width;
+                backgrounds[currentBackground]();
+            });
+
+            window.addEventListener("resize", () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+
+            function rainAnimation() {
+                const pixels = [];
+
+                function createPixels() {
+                    for (let i = 0; i < 50; i++) {
+                        pixels.push({
+                            x: Math.random() * canvas.width,
+                            y: Math.random() * canvas.height,
+                            size: Math.random() * 4 + 2,
+                            speed: Math.random() * 1 + 0.5
+                        });
                     }
-                });
+                }
 
-                requestAnimationFrame(drawPixels);
-            }
-
-            createPixels();
-            drawPixels();
-        }
-
-        function bouncingBallAnimation() {
-            let ball = {
-                x: Math.random() * canvas.width,
-                y: canvas.height * 0.2,
-                radius: 20,
-                speedY: 0,
-                gravity: 0.5,
-                bounceFactor: -0.7,
-                waiting: true,
-                nextBounceTime: Math.random() * 3000 + 2000
-            };
-            
-            function drawBall() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = "black";
-                
-                ctx.beginPath();
-                ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-                ctx.fill();
-            }
-
-            function updateBall() {
-                if (!ball.waiting) {
-                    ball.speedY += ball.gravity;
-                    ball.y += ball.speedY;
+                function drawPixels() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = "black";
                     
-                    if (ball.y + ball.radius >= canvas.height) {
-                        ball.y = canvas.height - ball.radius;
-                        ball.speedY *= ball.bounceFactor;
-                        ball.waiting = true;
-                        ball.nextBounceTime = Math.random() * 3000 + 2000;
-                        setTimeout(() => ball.waiting = false, ball.nextBounceTime);
-                    }
+                    pixels.forEach(pixel => {
+                        ctx.fillRect(Math.floor(pixel.x), Math.floor(pixel.y), pixel.size, pixel.size);
+                        pixel.y += pixel.speed;
+                        if (pixel.y > canvas.height) {
+                            pixel.y = -pixel.size;
+                            pixel.x = Math.random() * canvas.width;
+                        }
+                    });
+
+                    requestAnimationFrame(drawPixels);
                 }
-                drawBall();
-                requestAnimationFrame(updateBall);
+
+                createPixels();
+                drawPixels();
             }
 
-            setTimeout(() => ball.waiting = false, ball.nextBounceTime);
-            updateBall();
-        }
-
-        function flyingInsectAnimation() {
-            let insect = {
-                x: canvas.width / 2,
-                y: canvas.height / 2,
-                speedX: 1,
-                speedY: 1,
-                wingFlap: 0
-            };
-
-            function drawInsect() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.strokeStyle = "black";
-                ctx.lineWidth = 2;
+            function bouncingBallAnimation() {
+                let ball = {
+                    x: Math.random() * canvas.width,
+                    y: canvas.height * 0.2,
+                    radius: 20,
+                    speedY: 0,
+                    gravity: 0.5,
+                    bounceFactor: -0.7,
+                    waiting: true,
+                    nextBounceTime: Math.random() * 3000 + 2000
+                };
                 
-                ctx.beginPath();
-                ctx.moveTo(insect.x - 5, insect.y);
-                ctx.lineTo(insect.x + 5, insect.y);
-                ctx.stroke();
-                
-                ctx.beginPath();
-                ctx.moveTo(insect.x, insect.y - 3 + Math.sin(insect.wingFlap) * 2);
-                ctx.lineTo(insect.x, insect.y + 3 - Math.sin(insect.wingFlap) * 2);
-                ctx.stroke();
+                function drawBall() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = "black";
+                    
+                    ctx.beginPath();
+                    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                function updateBall() {
+                    if (!ball.waiting) {
+                        ball.speedY += ball.gravity;
+                        ball.y += ball.speedY;
+                        
+                        if (ball.y + ball.radius >= canvas.height) {
+                            ball.y = canvas.height - ball.radius;
+                            ball.speedY *= ball.bounceFactor;
+                            ball.waiting = true;
+                            ball.nextBounceTime = Math.random() * 3000 + 2000;
+                            setTimeout(() => ball.waiting = false, ball.nextBounceTime);
+                        }
+                    }
+                    drawBall();
+                    requestAnimationFrame(updateBall);
+                }
+
+                setTimeout(() => ball.waiting = false, ball.nextBounceTime);
+                updateBall();
             }
 
-            function updateInsect() {
-                insect.x += (Math.random() - 0.5) * 4;
-                insect.y += (Math.random() - 0.5) * 4;
-                insect.wingFlap += 0.2;
-                drawInsect();
-                requestAnimationFrame(updateInsect);
-            }
+            function flyingInsectAnimation() {
+                let insect = {
+                    x: canvas.width / 2,
+                    y: canvas.height / 2,
+                    speedX: 1,
+                    speedY: 1,
+                    wingFlap: 0
+                };
 
-            updateInsect();
+                function drawInsect() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.strokeStyle = "black";
+                    ctx.lineWidth = 2;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(insect.x - 5, insect.y);
+                    ctx.lineTo(insect.x + 5, insect.y);
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(insect.x, insect.y - 3 + Math.sin(insect.wingFlap) * 2);
+                    ctx.lineTo(insect.x, insect.y + 3 - Math.sin(insect.wingFlap) * 2);
+                    ctx.stroke();
+                }
+
+                function updateInsect() {
+                    insect.x += (Math.random() - 0.5) * 4;
+                    insect.y += (Math.random() - 0.5) * 4;
+                    insect.wingFlap += 0.2;
+                    drawInsect();
+                    requestAnimationFrame(updateInsect);
+                }
+
+                updateInsect();
+            }
         }
     </script>
 </body>
