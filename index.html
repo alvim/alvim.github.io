@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mauricio Alvim - Portfolio</title>
+    <title>UO Item Comparison</title>
     <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap" rel="stylesheet">
     <style>
         * {
@@ -12,16 +12,23 @@
             box-sizing: border-box;
         }
         body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: 'Pixelify Sans', sans-serif;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        /* Portfolio styles */
+        .portfolio-view {
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: white;
-            font-family: 'Pixelify Sans', sans-serif;
-            overflow: hidden;
             position: relative;
         }
+        
         canvas {
             position: absolute;
             top: 0;
@@ -30,18 +37,21 @@
             height: 100%;
             z-index: -1;
         }
-        h1 {
+        
+        .portfolio-view h1 {
             font-size: 3em;
             position: relative;
             z-index: 1;
+            color: #000;
         }
-        h2 {
+        
+        .portfolio-view h2 {
             font-size: 1.5em;
             position: relative;
             z-index: 1;
-            color: rgba(255, 255, 255, 0.6);
-            text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.4);
+            color: rgba(0, 0, 0, 0.7);
         }
+        
         #backgroundSelector {
             position: absolute;
             top: 10px;
@@ -57,23 +67,347 @@
             opacity: .125;
         }
         
-        .hello-world {
-            font-size: 2em;
-            color: black;
+        /* Comparison styles */
+        .comparison-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1.title {
+            text-align: center;
+            color: #ffd700;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            font-size: 2.5em;
+        }
+        
+        .items-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .item-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+        
+        .item-name {
+            color: #00ff88;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            text-align: center;
+            text-transform: capitalize;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .property {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .property:last-child {
+            border-bottom: none;
+        }
+        
+        .property-name {
+            color: #b8b8b8;
+            text-transform: capitalize;
+            font-size: 0.9em;
+        }
+        
+        .property-value {
+            color: #ffffff;
+            font-weight: bold;
+            text-align: right;
+        }
+        
+        /* Property type colors */
+        .bonus { color: #4fc3f7; }
+        .increase { color: #66bb6a; }
+        .decrease, .lower { color: #ff9800; }
+        .special { color: #ab47bc; }
+        .durability { color: #ef5350; }
+        .magic-tier { 
+            color: #ffd700; 
+            font-style: italic;
+            text-align: center !important;
+            display: block;
+            margin-top: 10px;
+            font-size: 1.1em;
+        }
+        
+        .comparison-table {
+            background: #0f0f1e;
+            border: 2px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+        
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .comparison-table th {
+            background: linear-gradient(135deg, #2a2a4e 0%, #1a1a3e 100%);
+            padding: 15px;
+            text-align: left;
+            font-size: 1.1em;
+            color: #ffd700;
+            border-bottom: 2px solid #444;
+        }
+        
+        .comparison-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .comparison-table tr:hover {
+            background: rgba(255,255,255,0.03);
+        }
+        
+        .better {
+            color: #4fc3f7;
+            font-weight: bold;
+        }
+        
+        .worse {
+            color: #888;
+        }
+        
+        .unique {
+            color: #ab47bc;
+            font-style: italic;
+        }
+        
+        .debug {
+            background: #222;
+            padding: 10px;
+            margin: 20px 0;
+            border: 1px solid #444;
+            font-size: 0.8em;
+            white-space: pre-wrap;
+        }
+        
+        @media (max-width: 768px) {
+            .items-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1.title {
+                font-size: 1.8em;
+            }
+            
+            .comparison-table {
+                overflow-x: auto;
+            }
         }
     </style>
 </head>
 <body>
     <script>
-        // Verifica se existe parâmetro "x" na URL
         const urlParams = new URLSearchParams(window.location.search);
-        const hasX = urlParams.has('x');
+        const item1Raw = urlParams.get('item1');
+        const item2Raw = urlParams.get('item2');
         
-        if (hasX) {
-            // Se tiver "x" na query string, renderiza apenas Hello World!
-            document.body.innerHTML = '<h1 class="hello-world">Hello World!</h1>';
+        // Debug log
+        console.log('Raw item1:', item1Raw);
+        console.log('Raw item2:', item2Raw);
+        
+        if (item1Raw && item2Raw) {
+            // Parse items function
+            function parseItem(itemString) {
+                // The itemString is already decoded by URLSearchParams.get()
+                // Split by comma (they appear as actual commas now, not %2C)
+                const parts = itemString.split(',');
+                
+                console.log('Parts after split:', parts);
+                
+                // First part is the name
+                const name = parts[0].replace(/\+/g, ' ').trim();
+                const properties = {};
+                
+                // Process remaining parts
+                for (let i = 1; i < parts.length; i++) {
+                    const prop = parts[i].trim();
+                    
+                    // Skip empty strings
+                    if (!prop) continue;
+                    
+                    console.log('Processing property:', prop);
+                    
+                    // Check for different property types
+                    if (prop.match(/^Weight:/i)) {
+                        properties['weight'] = prop.replace(/^Weight:\s*/i, '');
+                    } else if (prop.match(/^Donated By:/i)) {
+                        properties['donated by'] = prop.replace(/^Donated By:\s*/i, '');
+                    } else if (prop.includes('[') && prop.includes(']')) {
+                        properties['special'] = prop.replace(/[\[\]]/g, '');
+                    } else if (prop.match(/durability\s+\d+\s*\/\s*\d+/i)) {
+                        const durMatch = prop.match(/(\d+\s*\/\s*\d+)/);
+                        if (durMatch) {
+                            properties['durability'] = durMatch[1];
+                        }
+                    } else if (prop.match(/(Lesser|Greater|Major|Legendary|Artifact)\s+Magic\s+Item/i)) {
+                        properties['magic tier'] = prop;
+                    } else {
+                        // Try to parse as a stat with value
+                        // Match patterns like "dexterity bonus 4" or "hit chance increase 17%"
+                        const match = prop.match(/^(.+?)\s+(\d+%?)$/);
+                        if (match) {
+                            properties[match[1].trim().toLowerCase()] = match[2];
+                        } else {
+                            // If no pattern matched, just add as-is
+                            if (prop.length > 0) {
+                                properties[prop.toLowerCase()] = '✓';
+                            }
+                        }
+                    }
+                }
+                
+                console.log('Parsed item:', { name, properties });
+                return { name, properties };
+            }
+            
+            try {
+                const itemData1 = parseItem(item1Raw);
+                const itemData2 = parseItem(item2Raw);
+                
+                // Get all unique properties
+                const allProps = new Set([...Object.keys(itemData1.properties), ...Object.keys(itemData2.properties)]);
+                
+                // Create HTML for item cards
+                function createItemCard(itemData) {
+                    const propertiesHtml = Object.entries(itemData.properties).map(([key, value]) => {
+                        let valueClass = '';
+                        if (key.includes('bonus')) valueClass = 'bonus';
+                        else if (key.includes('increase')) valueClass = 'increase';
+                        else if (key.includes('lower') || key.includes('decrease')) valueClass = 'decrease';
+                        else if (key === 'special' || key.includes('donated')) valueClass = 'special';
+                        else if (key === 'durability') valueClass = 'durability';
+                        
+                        if (key === 'magic tier') {
+                            return `<div class="magic-tier">${value}</div>`;
+                        }
+                        
+                        return `
+                            <div class="property">
+                                <span class="property-name">${key}:</span>
+                                <span class="property-value ${valueClass}">${value}</span>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    return `
+                        <div class="item-card">
+                            <div class="item-name">${itemData.name}</div>
+                            ${propertiesHtml}
+                        </div>
+                    `;
+                }
+                
+                // Create comparison table rows
+                const tableRows = Array.from(allProps).map(prop => {
+                    const val1 = itemData1.properties[prop] || '-';
+                    const val2 = itemData2.properties[prop] || '-';
+                    
+                    let class1 = '';
+                    let class2 = '';
+                    
+                    // Compare numeric values
+                    const num1 = parseInt(val1);
+                    const num2 = parseInt(val2);
+                    
+                    if (!isNaN(num1) && !isNaN(num2)) {
+                        if (num1 > num2) {
+                            class1 = 'better';
+                            class2 = 'worse';
+                        } else if (num2 > num1) {
+                            class2 = 'better';
+                            class1 = 'worse';
+                        }
+                    } else if (val1 !== '-' && val2 === '-') {
+                        class1 = 'unique';
+                    } else if (val2 !== '-' && val1 === '-') {
+                        class2 = 'unique';
+                    }
+                    
+                    return `
+                        <tr>
+                            <td style="color: #888; text-transform: capitalize;">${prop}</td>
+                            <td class="${class1}">${val1}</td>
+                            <td class="${class2}">${val2}</td>
+                        </tr>
+                    `;
+                }).join('');
+                
+                // Debug info
+                const debugInfo = `
+Raw URLs:
+item1: ${item1Raw}
+item2: ${item2Raw}
+
+Parsed Data:
+Item 1: ${JSON.stringify(itemData1, null, 2)}
+Item 2: ${JSON.stringify(itemData2, null, 2)}
+                `;
+                
+                // Render the comparison view
+                document.body.innerHTML = `
+                    <div class="comparison-container">
+                        <h1 class="title">⚔️ Item Comparison ⚔️</h1>
+                        
+                        <div class="items-grid">
+                            ${createItemCard(itemData1)}
+                            ${createItemCard(itemData2)}
+                        </div>
+                        
+                        <div class="comparison-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Property</th>
+                                        <th>${itemData1.name}</th>
+                                        <th>${itemData2.name}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${tableRows}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="debug">
+                            <strong>Debug Information:</strong>
+                            ${debugInfo}
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error parsing items:', error);
+                document.body.innerHTML = `
+                    <h1 style="color: red; text-align: center;">Error parsing item data</h1>
+                    <div style="color: white; padding: 20px;">
+                        <p>Error: ${error.message}</p>
+                        <p>Stack: ${error.stack}</p>
+                        <p>Raw item1: ${item1Raw}</p>
+                        <p>Raw item2: ${item2Raw}</p>
+                    </div>
+                `;
+            }
         } else {
-            // Se não tiver, renderiza o portfolio completo
+            // Show portfolio
+            document.body.className = 'portfolio-view';
+            document.body.style.backgroundColor = 'white';
             document.body.innerHTML = `
                 <canvas id="bgCanvas"></canvas>
                 <h1>Mauricio Alvim</h1>
@@ -87,7 +421,7 @@
                 </select>
             `;
             
-            // Inicializa as animações apenas se não tiver "x"
+            // Initialize animations
             const canvas = document.getElementById("bgCanvas");
             const ctx = canvas.getContext("2d");
             canvas.width = window.innerWidth;
